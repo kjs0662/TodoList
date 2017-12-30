@@ -11,7 +11,10 @@ import UIKit
 class ListController: UITableViewController {
     
     let cellID = "CellID"
+    let identifier = "TodoListArray"
     var itemArray = ["Study Swift", "Meet John", "Buy milk"]
+    
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +31,10 @@ class ListController: UITableViewController {
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
         
         setupBarButtonItem()
+        
+        if let items = defaults.array(forKey: identifier) as? [String] {
+            itemArray = items
+        }
     }
     
     func setupBarButtonItem() {
@@ -45,6 +52,7 @@ class ListController: UITableViewController {
         let action = UIAlertAction(title: "ADD", style: .default) { (action) in
             guard let item = textField.text else { return }
             self.itemArray.append(item)
+            self.defaults.set(self.itemArray, forKey: self.identifier)
             self.tableView.reloadData()
         }
         
