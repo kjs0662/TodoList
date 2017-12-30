@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window = UIWindow(frame: UIScreen.main.bounds)
         window?.makeKeyAndVisible()
         
-        window?.rootViewController = UINavigationController(rootViewController: ViewController(style: .plain))
+        window?.rootViewController = UINavigationController(rootViewController: ListController(style: .plain))
         
         UINavigationBar.appearance().barTintColor = UIColor(red: 114/255, green: 189/255, blue: 240/255, alpha: 1)
         // get rid of black bar underneath navbar

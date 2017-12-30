@@ -8,10 +8,10 @@
 
 import UIKit
 
-class ViewController: UITableViewController {
+class ListController: UITableViewController {
     
     let cellID = "CellID"
-    let itemArray = ["Study Swift", "Meet John", "Buy milk"]
+    var itemArray = ["Study Swift", "Meet John", "Buy milk"]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,6 +26,36 @@ class ViewController: UITableViewController {
         navigationItem.titleView = titleLabel
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: cellID)
+        
+        setupBarButtonItem()
+    }
+    
+    func setupBarButtonItem() {
+        let addButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(handleAdd))
+        addButtonItem.tintColor = .white
+        
+        navigationItem.rightBarButtonItem = addButtonItem
+    }
+    
+    @objc func handleAdd() {
+        
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
+        let action = UIAlertAction(title: "ADD", style: .default) { (action) in
+            guard let item = textField.text else { return }
+            self.itemArray.append(item)
+            self.tableView.reloadData()
+        }
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create New Item"
+            textField = alertTextField
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+        
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
