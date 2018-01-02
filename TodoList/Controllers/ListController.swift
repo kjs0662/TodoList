@@ -11,10 +11,9 @@ import UIKit
 class ListController: UITableViewController {
     
     let cellID = "CellID"
-    let identifier = "TodoListArray"
-    var itemArray = ["Study Swift", "Meet John", "Buy milk"]
-    
-    let defaults = UserDefaults.standard
+    let todoListKey = "TodoListArray"
+    var itemArray = [Item]()
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -32,9 +31,11 @@ class ListController: UITableViewController {
         
         setupBarButtonItem()
         
-        if let items = defaults.array(forKey: identifier) as? [String] {
-            itemArray = items
-        }
+        
+        print(dataFilePath)
+        
+        loadItems()
+        
     }
     
     func setupBarButtonItem() {
@@ -50,10 +51,12 @@ class ListController: UITableViewController {
         
         let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "ADD", style: .default) { (action) in
+            
             guard let item = textField.text else { return }
-            self.itemArray.append(item)
-            self.defaults.set(self.itemArray, forKey: self.identifier)
-            self.tableView.reloadData()
+            let newItem = Item()
+            newItem.title = item
+            self.itemArray.append(newItem)
+            self.saveItems()
         }
         
         alert.addTextField { (alertTextField) in
@@ -66,23 +69,57 @@ class ListController: UITableViewController {
         
     }
     
+    func saveItems() {
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print("Error encoding item array, \(error)")
+        }
+        
+        self.tableView.reloadData()
+    }
+    
+    func loadItems() {
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+            itemArray = try decoder.decode([Item].self, from: data)
+            } catch {
+                print("error decoding item array, \(error)")
+            }
+        }
+    }
+    
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return itemArray.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellID, for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row]
+        
+        let item = itemArray[indexPath.row]
+        
+        cell.textLabel?.text = item.title
+        
+        cell.accessoryType = item.done ? .checkmark : .none
+        
+//        if item.done == true {
+//            cell.accessoryType = .checkmark
+//        } else {
+//            cell.accessoryType = .none
+//        }
+        
         return cell
     }
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let checked = tableView.cellForRow(at: indexPath)
-        if checked?.accessoryType == .checkmark {
-            checked?.accessoryType = .none
-        } else {
-            checked?.accessoryType = .checkmark
-        }
+        
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+        saveItems()
         
         tableView.deselectRow(at: indexPath, animated: true)
     }
